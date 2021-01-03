@@ -17,15 +17,16 @@ import xml.etree.ElementTree as ET
 @dataclass(frozen=True)
 class Person:
     name: str
-    phone: str
-    birthday: int
+    phone: int
+    birthday: list
 
 
 @dataclass
 class People:
     people: List[Person] = field(default_factory=lambda: [])
 
-    def add(self, name, phone, birthday):
+    def add(self, name: str, phone: int, birthday: list) -> None:
+
         self.people.append(
             Person(
                 name=name,
@@ -36,7 +37,7 @@ class People:
 
         self.people.sort(key=lambda person: person.name)
 
-    def __str__(self):
+    def __str__(self) -> str:
 
         table = []
         line = '+-{}-+-{}-+-{}-+-{}-+-{}-+-{}-+'.format(
@@ -66,9 +67,9 @@ class People:
                     idx,
                     person.name,
                     person.phone,
-                    person.birthday,
-                    person.birthday,
-                    person.birthday
+                    person.birthday[0],
+                    person.birthday[1],
+                    person.birthday[2]
                 )
             )
 
@@ -77,17 +78,17 @@ class People:
         return '\n'.join(table)
 
     def select(self, period):
-        month = period
-
+        parts = command.split(' ', maxsplit=2)
+        period = int(parts[1])
+        result = []
         count = 0
         for person in self.people:
-            birthday = person.birthday
-            if birthday:
-                if birthday == month:
-                    count += 1
-        return f'{count}, {person.name}'
+            if period == person.birthday[1]:
+                count += 1
+                result.append(person)
+        return result
 
-    def load(self, filename):
+    def load(self, filename) -> None:
         with open(filename, 'r', encoding="utf8") as fin:
             xml = fin.read()
 
@@ -103,7 +104,10 @@ class People:
                 elif element.tag == 'phone':
                     phone = element.text
                 elif element.tag == 'birthday':
-                    birthday = int(element.text)
+                    birthday = element.text
+                    birthday = birthday.replace("[", "")
+                    birthday = birthday.replace("]", "")
+                    birthday = list(map(int, birthday.split(',')))
 
                 if name is not None and phone is not None \
                         and birthday is not None:
@@ -115,7 +119,7 @@ class People:
                         )
                     )
 
-    def save(self, filename):
+    def save(self, filename) -> None:
         root = ET.Element('People')
         for person in self.people:
             person_element = ET.Element('Person')
@@ -145,10 +149,11 @@ if __name__ == '__main__':
 
         if command == 'exit':
             break
+
         elif command == 'add':
             name = input("Фамилия и инициалы: ")
             phone = input("Телефон: ")
-            birthday = int(input("Месяц рождения: "))
+            birthday = list(map(int, input("Дата рождения в формате: дд,мм,гггг ").split(',')))
 
             people.add(name, phone, birthday)
 
