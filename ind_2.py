@@ -18,14 +18,14 @@ import xml.etree.ElementTree as ET
 class Person:
     name: str
     phone: int
-    birthday: list
+    birthday: List[int]
 
 
 @dataclass
 class People:
     people: List[Person] = field(default_factory=lambda: [])
 
-    def add(self, name: str, phone: int, birthday: list) -> None:
+    def add(self, name: str, phone: int, birthday: List[int]) -> None:
 
         self.people.append(
             Person(
